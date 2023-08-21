@@ -3,7 +3,7 @@
 #
 
 var opentrecken_watering = module('opentrecken_watering')
-var opentrecken_watering_version = "v0.0.1"
+var opentrecken_watering_version = "v0.0.2"
 class opentrecken_watering
   
   var sensor_value  # current sensor value, set via rule
@@ -30,8 +30,8 @@ class opentrecken_watering
   # registers a rule to get the sensor value of the configured analog input
   # ####################################################################################################
   def add_rule(named_input)
-    tasmota.add_rule("ANALOG#" + named_input, def (value, trigger) self.trigger_sensor_value_changed(value, trigger) end)
-    self.configured_rule_name = "ANALOG#" + named_input
+    tasmota.add_rule(named_input, def (value, trigger) self.trigger_sensor_value_changed(value, trigger) end)
+    self.configured_rule_name = named_input
   end
 
   # ####################################################################################################
@@ -136,7 +136,14 @@ class opentrecken_watering
     var ret = []
     if sensors != nil && sensors.contains("ANALOG")
       for i: sensors["ANALOG"].keys()
-        var o = str(i)
+        var o = "ANALOG#" + str(i)
+        ret.push(o)
+      end
+    end
+
+    if sensors != nil && sensors.contains("ADS1115")
+      for i: sensors["ADS1115"].keys()
+        var o = "ADS1115#" + str(i)
         ret.push(o)
       end
     end
@@ -201,7 +208,7 @@ class opentrecken_watering
 
     webserver.content_start("Watering")           #- title of the web page -#
     webserver.content_send_style()                #- send standard Tasmota styles -#
-    webserver.content_send("<fieldset><legend><b>&nbsp;Watering&nbsp;configuration&nbsp;</b></legend>")
+    webserver.content_send("<fieldset><legend><b> Watering configuration </b></legend>")
     webserver.content_send("<form action='/opentrecken_watering' method='post'>")
 
     # Sensor configuration
